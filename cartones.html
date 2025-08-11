@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartones de BINGO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-generate {
+            background: linear-gradient(45deg, #00b894, #00cec9);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 184, 148, 0.6);
+        }
+
+        .btn-reset {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-reset:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.6);
+        }
+
+        .carton-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .carton {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 3px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .carton:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .carton-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .carton-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .carton-stats {
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .bingo-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 0 auto;
+            max-width: 280px;
+        }
+
+        .bingo-cell {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+
+        .bingo-cell:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            transform: scale(1.05);
+        }
+
+        .bingo-cell.marked {
+            background: linear-gradient(45deg, #00b894, #00cec9);
+            color: white;
+            border-color: #00b894;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+        }
+
+        .bingo-cell.marked::before {
+            content: "✓";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .bingo-cell.free {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+            border-color: #f39c12;
+            font-size: 1.5em;
+            position: relative;
+        }
+
+        .bingo-cell.free::before {
+            content: "🎁";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #9b59b6;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #00b894, #00cec9);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cartones-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .bingo-grid {
+                max-width: 250px;
+            }
+            
+            .bingo-cell {
+                width: 45px;
+                height: 45px;
+                font-size: 1em;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00b894;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Cartones de BINGO 🎯</h1>
+        
+        <div class="controls">
+            <button class="btn btn-generate" id="generateBtn">🎲 GENERAR NUEVO CARTÓN</button>
+        </div>
+        
+        <div class="carton-container" id="cartonContainer">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Haz clic en "GENERAR NUEVO CARTÓN" para comenzar</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class BingoCarton {
+            constructor() {
+                this.carton = null;
+                this.numerosMarcados = new Set();
+                this.initializeGame();
+                this.setupEventListeners();
+            }
+            
+            initializeGame() {
+                this.carton = null;
+                this.numerosMarcados.clear();
+                this.showLoadingMessage();
+            }
+            
+            setupEventListeners() {
+                document.getElementById('generateBtn').addEventListener('click', () => this.generateCarton());
+            }
+            
+            generateCarton() {
+                this.carton = this.createCarton();
+                this.numerosMarcados.clear();
+                this.renderCarton();
+            }
+            
+            createCarton() {
+                const carton = {
+                    numeros: [],
+                    marcados: new Set()
+                };
+                
+                // Crear array de números del 1 al 75
+                const numerosDisponibles = Array.from({length: 75}, (_, i) => i + 1);
+                
+                // Generar 24 números únicos para el cartón (5x5 - 1 casilla libre)
+                for (let i = 0; i < 24; i++) {
+                    const randomIndex = Math.floor(Math.random() * numerosDisponibles.length);
+                    carton.numeros.push(numerosDisponibles.splice(randomIndex, 1)[0]);
+                }
+                
+                // Ordenar números por columna (B=1-15, I=16-30, N=31-45, G=46-60, O=61-75)
+                carton.numeros.sort((a, b) => a - b);
+                
+                // Array de emojis para la casilla libre
+                const emojis = ['🎉', '🎊', '🎯', '⭐', '🌟', '💎', '🎁', '🏆', '🎨', '🎭', '🎪', '🎟️', '🎲', '🎮', '🎸', '🎹', '🎺', '🎻', '🎤', '🎧'];
+                const emojiAleatorio = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Crear matriz 5x5
+                const matriz = [];
+                let numeroIndex = 0;
+                
+                for (let fila = 0; fila < 5; fila++) {
+                    matriz[fila] = [];
+                    for (let col = 0; col < 5; col++) {
+                        if (fila === 2 && col === 2) {
+                            // Casilla central libre con emoji aleatorio
+                            matriz[fila][col] = emojiAleatorio;
+                        } else {
+                            // Asignar número del array
+                            if (numeroIndex < carton.numeros.length) {
+                                matriz[fila][col] = carton.numeros[numeroIndex];
+                                numeroIndex++;
+                            }
+                        }
+                    }
+                }
+                
+                carton.matriz = matriz;
+                return carton;
+            }
+            
+            renderCarton() {
+                const container = document.getElementById('cartonContainer');
+                container.innerHTML = '';
+                
+                const cartonElement = this.createCartonElement();
+                container.appendChild(cartonElement);
+            }
+            
+            createCartonElement() {
+                const cartonDiv = document.createElement('div');
+                cartonDiv.className = 'carton';
+                
+                const numerosMarcados = this.numerosMarcados.size;
+                const totalNumeros = 24; // Sin contar la casilla libre
+                const porcentaje = (numerosMarcados / totalNumeros) * 100;
+                
+                cartonDiv.innerHTML = `
+                    <div class="carton-header">
+                        <div class="carton-title">🎯 Cartón de BINGO</div>
+                        <div class="carton-stats">
+                            <span>Marcados: ${numerosMarcados}/${totalNumeros}</span>
+                            <span>${porcentaje.toFixed(0)}%</span>
+                        </div>
+                    </div>
+                    <div class="bingo-grid">
+                        ${this.createBingoGrid()}
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${porcentaje}%"></div>
+                    </div>
+                `;
+                
+                // Agregar event listeners a las celdas
+                const cells = cartonDiv.querySelectorAll('.bingo-cell:not(.free)');
+                cells.forEach(cell => {
+                    cell.addEventListener('click', () => this.toggleNumber(parseInt(cell.textContent)));
+                });
+                
+                return cartonDiv;
+            }
+            
+            createBingoGrid() {
+                let html = '';
+                for (let fila = 0; fila < 5; fila++) {
+                    for (let col = 0; col < 5; col++) {
+                        const valor = this.carton.matriz[fila][col];
+                        let clase = 'bingo-cell';
+                        let contenido = valor;
+                        
+                        // Verificar si es la casilla central (fila 2, columna 2)
+                        if (fila === 2 && col === 2) {
+                            clase += ' free';
+                            // El contenido ya es el emoji aleatorio
+                        } else if (this.numerosMarcados.has(valor)) {
+                            clase += ' marked';
+                        }
+                        
+                        html += `<div class="${clase}">${contenido}</div>`;
+                    }
+                }
+                return html;
+            }
+            
+            toggleNumber(numero) {
+                if (this.numerosMarcados.has(numero)) {
+                    this.numerosMarcados.delete(numero);
+                } else {
+                    this.numerosMarcados.add(numero);
+                }
+                
+                this.renderCarton();
+                
+                // Efecto visual
+                const cell = event.target;
+                cell.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    cell.style.transform = '';
+                }, 200);
+            }
+            
+            showLoadingMessage() {
+                const container = document.getElementById('cartonContainer');
+                container.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Haz clic en "GENERAR NUEVO CARTÓN" para comenzar</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Inicializar el juego cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            new BingoCarton();
+        });
+    </script>
+</body>
+</html>
