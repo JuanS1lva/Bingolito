@@ -107,6 +107,16 @@
             animation: pulse 2s infinite;
         }
 
+        .letter-indicator {
+            font-size: 1.2em;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -134,6 +144,28 @@
             font-size: 1.8em;
         }
 
+        .column-headers {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            max-width: 600px;
+            margin: 0 auto 10px auto;
+        }
+
+        .column-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #333;
+            padding: 5px;
+        }
+
+        .column-header.b { color: #e74c3c; }
+        .column-header.i { color: #3498db; }
+        .column-header.n { color: #f39c12; }
+        .column-header.g { color: #27ae60; }
+        .column-header.o { color: #9b59b6; }
+
         .bingo-board {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
@@ -148,6 +180,7 @@
             border: 2px solid #ddd;
             border-radius: 8px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-weight: bold;
@@ -155,6 +188,18 @@
             background: #f8f9fa;
             transition: all 0.3s ease;
             cursor: default;
+            position: relative;
+        }
+
+        .number-cell .letter {
+            font-size: 0.7em;
+            color: #666;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+
+        .number-cell .number {
+            font-size: 1em;
         }
 
         .number-cell.drawn {
@@ -237,6 +282,7 @@
         <div class="current-number" id="currentNumber">
             <h2>Número Actual</h2>
             <div class="number-display" id="numberDisplay">-</div>
+            <div class="letter-indicator" id="letterIndicator"></div>
         </div>
         
         <div class="board-container">
@@ -315,6 +361,11 @@
                 const numberDisplay = document.getElementById('numberDisplay');
                 numberDisplay.textContent = drawnNumber;
                 
+                // Mostrar la letra correspondiente
+                const letterIndicator = document.getElementById('letterIndicator');
+                const letter = this.getLetterForNumber(drawnNumber);
+                letterIndicator.textContent = `Letra: ${letter}`;
+                
                 // Efecto especial para el número sorteado
                 numberDisplay.style.animation = 'none';
                 setTimeout(() => {
@@ -339,6 +390,15 @@
                 }
             }
             
+            getLetterForNumber(numero) {
+                if (numero >= 1 && numero <= 15) return 'B';
+                if (numero >= 16 && numero <= 30) return 'I';
+                if (numero >= 31 && numero <= 45) return 'N';
+                if (numero >= 46 && numero <= 60) return 'G';
+                if (numero >= 61 && numero <= 75) return 'O';
+                return '';
+            }
+            
             updateBoard() {
                 const board = document.getElementById('bingoBoard');
                 board.innerHTML = '';
@@ -346,7 +406,18 @@
                 for (let i = 1; i <= 75; i++) {
                     const cell = document.createElement('div');
                     cell.className = 'number-cell';
-                    cell.textContent = i;
+                    
+                    const letter = this.getLetterForNumber(i);
+                    const letterSpan = document.createElement('div');
+                    letterSpan.className = 'letter';
+                    letterSpan.textContent = letter;
+                    
+                    const numberSpan = document.createElement('div');
+                    numberSpan.className = 'number';
+                    numberSpan.textContent = i;
+                    
+                    cell.appendChild(letterSpan);
+                    cell.appendChild(numberSpan);
                     
                     if (this.drawnNumbers.includes(i)) {
                         cell.classList.add('drawn');
@@ -373,6 +444,9 @@
                 const numberDisplay = document.getElementById('numberDisplay');
                 numberDisplay.textContent = '-';
                 numberDisplay.style.animation = '';
+                
+                const letterIndicator = document.getElementById('letterIndicator');
+                letterIndicator.textContent = '';
                 
                 const drawBtn = document.getElementById('drawBtn');
                 drawBtn.disabled = false;
