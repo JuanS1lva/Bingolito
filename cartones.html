@@ -105,6 +105,31 @@
             border-bottom: 2px solid #eee;
         }
 
+        .bingo-headers {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            max-width: 280px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .bingo-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.5em;
+            padding: 8px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .bingo-header.b { background: #e74c3c; }
+        .bingo-header.i { background: #3498db; }
+        .bingo-header.n { background: #f39c12; }
+        .bingo-header.g { background: #27ae60; }
+        .bingo-header.o { background: #9b59b6; }
+
         .carton-title {
             font-size: 1.5em;
             color: #333;
@@ -132,6 +157,7 @@
             border: 2px solid #ddd;
             border-radius: 8px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-weight: bold;
@@ -143,6 +169,23 @@
             user-select: none;
         }
 
+        .bingo-cell .letter {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+
+        .bingo-cell .number {
+            font-size: 1em;
+        }
+
+        .bingo-cell .letter.b { color: #e74c3c; }
+        .bingo-cell .letter.i { color: #3498db; }
+        .bingo-cell .letter.n { color: #f39c12; }
+        .bingo-cell .letter.g { color: #27ae60; }
+        .bingo-cell .letter.o { color: #9b59b6; }
+
         .bingo-cell:hover {
             background: #e3f2fd;
             border-color: #2196f3;
@@ -151,10 +194,14 @@
 
         .bingo-cell.marked {
             background: linear-gradient(45deg, #00b894, #00cec9);
-            color: white;
             border-color: #00b894;
             transform: scale(1.1);
             box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+        }
+
+        .bingo-cell.marked .letter,
+        .bingo-cell.marked .number {
+            color: white;
         }
 
         .bingo-cell.marked::before {
@@ -303,46 +350,60 @@
                 this.renderCarton();
             }
             
+            getRandomNumbersInRange(min, max, count) {
+                const numbers = [];
+                const available = Array.from({length: max - min + 1}, (_, i) => min + i);
+                
+                for (let i = 0; i < count; i++) {
+                    const randomIndex = Math.floor(Math.random() * available.length);
+                    numbers.push(available.splice(randomIndex, 1)[0]);
+                }
+                
+                return numbers;
+            }
+            
             createCarton() {
                 const carton = {
                     numeros: [],
                     marcados: new Set()
                 };
                 
-                // Crear array de números del 1 al 75
-                const numerosDisponibles = Array.from({length: 75}, (_, i) => i + 1);
-                
-                // Generar 24 números únicos para el cartón (5x5 - 1 casilla libre)
-                for (let i = 0; i < 24; i++) {
-                    const randomIndex = Math.floor(Math.random() * numerosDisponibles.length);
-                    carton.numeros.push(numerosDisponibles.splice(randomIndex, 1)[0]);
-                }
-                
-                // Ordenar números por columna (B=1-15, I=16-30, N=31-45, G=46-60, O=61-75)
-                carton.numeros.sort((a, b) => a - b);
-                
                 // Array de emojis para la casilla libre
                 const emojis = ['🎉', '🎊', '🎯', '⭐', '🌟', '💎', '🎁', '🏆', '🎨', '🎭', '🎪', '🎟️', '🎲', '🎮', '🎸', '🎹', '🎺', '🎻', '🎤', '🎧'];
                 const emojiAleatorio = emojis[Math.floor(Math.random() * emojis.length)];
                 
-                // Crear matriz 5x5
+                // Crear matriz 5x5 siguiendo la lógica del BINGO
                 const matriz = [];
-                let numeroIndex = 0;
                 
+                // Columna B (1-15): 5 números
+                const numerosB = this.getRandomNumbersInRange(1, 15, 5);
+                
+                // Columna I (16-30): 5 números
+                const numerosI = this.getRandomNumbersInRange(16, 30, 5);
+                
+                // Columna N (31-45): 5 números (4 + casilla libre)
+                const numerosN = this.getRandomNumbersInRange(31, 45, 4);
+                
+                // Columna G (46-60): 5 números
+                const numerosG = this.getRandomNumbersInRange(46, 60, 5);
+                
+                // Columna O (61-75): 5 números
+                const numerosO = this.getRandomNumbersInRange(61, 75, 5);
+                
+                // Construir la matriz
                 for (let fila = 0; fila < 5; fila++) {
                     matriz[fila] = [];
-                    for (let col = 0; col < 5; col++) {
-                        if (fila === 2 && col === 2) {
-                            // Casilla central libre con emoji aleatorio
-                            matriz[fila][col] = emojiAleatorio;
-                        } else {
-                            // Asignar número del array
-                            if (numeroIndex < carton.numeros.length) {
-                                matriz[fila][col] = carton.numeros[numeroIndex];
-                                numeroIndex++;
-                            }
-                        }
+                    matriz[fila][0] = numerosB[fila];        // Columna B
+                    matriz[fila][1] = numerosI[fila];        // Columna I
+                    
+                    if (fila === 2) {
+                        matriz[fila][2] = emojiAleatorio;    // Casilla central libre
+                    } else {
+                        matriz[fila][2] = numerosN[fila > 2 ? fila - 1 : fila]; // Columna N
                     }
+                    
+                    matriz[fila][3] = numerosG[fila];        // Columna G
+                    matriz[fila][4] = numerosO[fila];        // Columna O
                 }
                 
                 carton.matriz = matriz;
@@ -350,6 +411,7 @@
             }
             
             renderCarton() {
+                console.log('Renderizando cartón, números marcados:', Array.from(this.numerosMarcados));
                 const container = document.getElementById('cartonContainer');
                 container.innerHTML = '';
                 
@@ -373,6 +435,13 @@
                             <span>${porcentaje.toFixed(0)}%</span>
                         </div>
                     </div>
+                    <div class="bingo-headers">
+                        <div class="bingo-header b">B</div>
+                        <div class="bingo-header i">I</div>
+                        <div class="bingo-header n">N</div>
+                        <div class="bingo-header g">G</div>
+                        <div class="bingo-header o">O</div>
+                    </div>
                     <div class="bingo-grid">
                         ${this.createBingoGrid()}
                     </div>
@@ -384,7 +453,11 @@
                 // Agregar event listeners a las celdas
                 const cells = cartonDiv.querySelectorAll('.bingo-cell:not(.free)');
                 cells.forEach(cell => {
-                    cell.addEventListener('click', () => this.toggleNumber(parseInt(cell.textContent)));
+                    cell.addEventListener('click', (event) => {
+                        const numberElement = cell.querySelector('.number');
+                        const numero = parseInt(numberElement.textContent);
+                        this.toggleNumber(numero, event);
+                    });
                 });
                 
                 return cartonDiv;
@@ -392,6 +465,8 @@
             
             createBingoGrid() {
                 let html = '';
+                const letras = ['B', 'I', 'N', 'G', 'O'];
+                
                 for (let fila = 0; fila < 5; fila++) {
                     for (let col = 0; col < 5; col++) {
                         const valor = this.carton.matriz[fila][col];
@@ -404,25 +479,36 @@
                             // El contenido ya es el emoji aleatorio
                         } else if (this.numerosMarcados.has(valor)) {
                             clase += ' marked';
+                            console.log('Marcando celda:', valor, 'fila:', fila, 'col:', col);
                         }
                         
-                        html += `<div class="${clase}">${contenido}</div>`;
+                        const letra = letras[col];
+                        html += `<div class="${clase}">
+                            <div class="letter ${letra.toLowerCase()}">${letra}</div>
+                            <div class="number">${contenido}</div>
+                        </div>`;
                     }
                 }
                 return html;
             }
             
-            toggleNumber(numero) {
+            toggleNumber(numero, event) {
+                console.log('Toggle número:', numero, 'Marcados actuales:', Array.from(this.numerosMarcados));
+                
                 if (this.numerosMarcados.has(numero)) {
                     this.numerosMarcados.delete(numero);
+                    console.log('Número desmarcado:', numero);
                 } else {
                     this.numerosMarcados.add(numero);
+                    console.log('Número marcado:', numero);
                 }
+                
+                console.log('Marcados después del toggle:', Array.from(this.numerosMarcados));
                 
                 this.renderCarton();
                 
                 // Efecto visual
-                const cell = event.target;
+                const cell = event.currentTarget;
                 cell.style.transform = 'scale(1.2)';
                 setTimeout(() => {
                     cell.style.transform = '';
